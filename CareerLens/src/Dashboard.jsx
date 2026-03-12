@@ -1,45 +1,10 @@
+import { analyzeResume} from "./api";
 import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
-
-const REQUIRED_SKILLS = [
-  "html",
-  "css",
-  "javascript",
-  "react",
-  "git",
-  "api",
-  "sql"
-];
-
-function calculateATS(resumeText) {
-  if (!resumeText) {
-    return {
-      ats: 0,
-      matched: [],
-      missing: REQUIRED_SKILLS
-    };
-  }
-
-  const text = resumeText.toLowerCase();
-
-  const matched = REQUIRED_SKILLS.filter(skill =>
-    text.includes(skill)
-  );
-
-  const missing = REQUIRED_SKILLS.filter(
-    skill => !matched.includes(skill)
-  );
-
-  const ats = Math.round(
-    (matched.length / REQUIRED_SKILLS.length) * 100
-  );
-
-  return { ats, matched, missing };
-}
 
 function getTodayDate() {
     return new Date().toLocaleDateString("en-IN", {
@@ -57,13 +22,21 @@ export default function Dashboard() {
   const [resumeText, setResumeText] = useState("");
   const [analysis, setAnalysis] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      navigate("/"); // ⬅️ FORCE redirect to Home if logged out
-    } else if (user.displayName) {
-      setUserName(user.displayName);
+      navigate("/");
+    } else {
+      if (user.displayName) {
+        setUserName(user.displayName);
+      }
+
+      const tkn = await user.getIdToken();   // ⭐ IMPORTANT
+      setToken(tkn);
+
+      console.log("TOKEN:", tkn);            // Debug
     }
   });
 
@@ -197,15 +170,16 @@ export default function Dashboard() {
           <ResumeContent 
             setResumeText={setResumeText}
             setAnalysis={setAnalysis}
+            token={token}    // ⭐ CRITICAL
           />
         )}
         {active === "skills" && (
           <SkillsContent resumeText={resumeText} />
         )}
         {active === "analytics" && (
-          <AnalyticsContent resumeText={resumeText} />
+          <AnalyticsContent resumeText={resumeText} analysis={analysis} />
         )}
-        {active === "ai" && <AIAssistant />}
+        {active === "ai" && <AIAssistant token={token} />}
         {active === "suggestions" && <Suggestions />}
       </main>
 
@@ -241,10 +215,7 @@ function DashboardContent({ userName, analysis}) {
 
   const ats = analysis?.ats_score || 0;
   const matched = analysis?.detected_skills || [];
-
-  const missing = hasResume
-  ? REQUIRED_SKILLS.filter(skill => !matched.includes(skill))
-  : [];
+  const missing = analysis?.missing_skills || [];
 
   return (
     <>
@@ -339,41 +310,23 @@ function DashboardContent({ userName, analysis}) {
 
 /* ---------------- RESUME ---------------- */
 
-function ResumeContent({ setResumeText, setAnalysis }) {
+function ResumeContent({ setResumeText, setAnalysis, token }) {
   const [fileName, setFileName] = useState("");
 
   const handleResumeUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-      const formData = new FormData();
-      formData.append("resume", file);
-
-      alert("⏳ Analyzing resume...");
-
-      const res = await fetch("http://localhost:5000/analyze", {
-        method: "POST",
-        body: formData
-      });
-
-      const data = await res.json();
-      console.log("AI RESPONSE:", data);
-
-      if (!data.detected_skills) {
-        alert("❌ Analysis failed");
-        return;
-      }
-
-      setAnalysis(data);   // ⭐ THIS MAKES BACKEND DRIVE UI
-      setResumeText((data.detected_skills || []).join(" "));
-      alert("✅ Resume analyzed successfully!");
-
-    } catch (err) {
-      console.error(err);
-      alert("❌ Upload failed");
-    }
-  };
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    setFileName(file.name);
+    alert("⏳ Analyzing resume...");
+    const analysis = await analyzeResume(file, token);
+    setAnalysis(analysis);
+    setResumeText(analysis.detected_skills.join(" "));
+    alert("✅ Resume analyzed successfully!");
+  } catch (err) {
+    alert("❌ " + err.message);
+  }
+};
 
   return (
     <>
@@ -420,9 +373,8 @@ function ResumeContent({ setResumeText, setAnalysis }) {
 
 function SkillsContent({ resumeText }) {
   const hasResume = resumeText.trim().length > 0;
-  const { matched, missing } = hasResume
-    ? calculateATS(resumeText)
-    : { matched: [], missing: [] };
+  const matched = resumeText.split(" ").filter(Boolean);
+  const missing = [];
 
   return (
     <>
@@ -529,11 +481,10 @@ function ReportsContent() {
 
 /* ---------------- ANALYTICS ---------------- */
 
-function AnalyticsContent({ resumeText }) {
+function AnalyticsContent({ resumeText, analysis }) {
   const hasResume = resumeText.trim().length > 0;
-  const { ats, matched } = hasResume
-    ? calculateATS(resumeText)
-    : { ats: 0, matched: [] };
+  const ats = analysis?.ats_score || 0;
+  const matched = analysis?.detected_skills || [];
 
   return (
     <>
@@ -677,7 +628,7 @@ function DownloadCard({ title, desc }) {
   );
 }
 
-function AIAssistant() {
+function AIAssistant({ token }) {
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState([
     {
@@ -686,11 +637,34 @@ function AIAssistant() {
     }
   ]);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
+    if (!token) {
+      alert("Authentication not ready. Please wait.");
+      return;
+    }
+
     if (!message.trim()) return;
 
-    setChat([...chat, { role: "user", text: message }]);
+    const userMsg = { role: "user", text: message };
+
+    const updatedChat = [...chat, userMsg];   // ⭐ CRITICAL FIX
+
+    setChat(updatedChat);
     setMessage("");
+
+    try {
+      const data = await askAI(message, token, updatedChat);
+
+      setChat(prev => [
+        ...prev,
+        { role: "ai", text: data.reply }
+      ]);
+    } catch (err) {
+      setChat(prev => [
+        ...prev,
+        { role: "ai", text: "❌ AI error: " + err.message }
+      ]);
+    }
   };
 
   return (
