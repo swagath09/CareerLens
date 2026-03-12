@@ -1,10 +1,8 @@
 # CareerLens AI 🚀
 
-CareerLens AI is an intelligent resume analysis platform designed to help students and job seekers
-evaluate resume quality, identify skill gaps, and receive AI-powered improvement suggestions.
+CareerLens AI is an intelligent resume analysis platform designed to help students and job seekers evaluate resume quality, identify skill gaps, and receive AI-powered improvement insights.
 
-The application mimics how modern Applicant Tracking Systems (ATS) and recruiters evaluate resumes,
-providing structured, data-driven insights that improve a candidate’s chances of selection.
+The application mimics how modern Applicant Tracking Systems (ATS) and recruiters evaluate resumes, providing structured, data-driven insights that improve a candidate’s chances of selection.
 
 ---
 
@@ -19,7 +17,7 @@ Many students and job seekers create resumes without understanding:
 
 Traditional resume building lacks intelligent, personalized feedback.
 
-CareerLens AI solves this by combining resume analysis logic with AI-style evaluation techniques.
+CareerLens AI solves this problem by combining resume analysis logic with ATS-style evaluation techniques.
 
 ---
 
@@ -27,11 +25,11 @@ CareerLens AI solves this by combining resume analysis logic with AI-style evalu
 
 CareerLens AI provides:
 
-✔ Resume structure understanding  
-✔ Skill presence evaluation  
-✔ Skill gap detection  
-✔ ATS-style analysis logic  
-✔ Improvement-oriented insights  
+- Resume structure understanding
+- Skill presence evaluation
+- Skill gap detection
+- ATS-style analysis logic
+- Improvement-oriented insights
 
 This enables users to improve resumes using **objective feedback instead of guesswork**.
 
@@ -39,88 +37,82 @@ This enables users to improve resumes using **objective feedback instead of gues
 
 ## ✨ Features
 
-- 📄 Resume Upload & Processing
-- 🤖 Resume Analysis Engine
-- 📊 ATS-Style Evaluation
-- 🧠 Skill Gap Identification
-- 🎯 Resume Quality Insights
-- 🔐 Secure Backend APIs
+- Resume Upload & Processing
+- Resume Analysis Engine
+- ATS-Style Evaluation
+- Skill Gap Identification
+- Resume Quality Insights
+- Secure Backend APIs
+- Resume Validation (detects non-resume documents)
 
 ---
 
 ## ⚙️ How the Application Works
 
-1️⃣ User uploads resume via frontend interface  
-2️⃣ Backend validates & processes file  
-3️⃣ Resume content is analyzed  
-4️⃣ ATS-style evaluation logic runs  
-5️⃣ Skill gaps & insights generated  
-6️⃣ Results displayed on dashboard  
+1. User uploads resume via frontend interface  
+2. Backend validates and processes the file  
+3. Resume content is parsed and analyzed  
+4. ATS-style evaluation logic runs  
+5. Skill gaps and insights are generated  
+6. Results are displayed on the dashboard  
+
+---
+
+## 🧩 System Architecture
+
+User  
+↓  
+React Frontend (Vite)  
+↓  
+Node.js + Express Backend  
+↓  
+Resume Parser (pdf-parse)  
+↓  
+Skill Detection Engine  
+↓  
+ATS Score & Skill Gap Analysis  
+↓  
+Dashboard Results  
 
 ---
 
 ## 🛠 Tech Stack
 
-### ✅ Frontend
+### Frontend
 - React.js (Vite)
+- JavaScript
+- HTML5
+- CSS3
 
-**Why React?**
-
-✔ Component-based UI architecture  
-✔ Efficient rendering & state handling  
-✔ Industry-standard frontend framework  
-✔ Scalable & maintainable design  
-
-**Why Vite?**
-
-✔ Extremely fast development server  
-✔ Optimized modern build system  
-✔ Better performance vs traditional tooling  
-
----
-
-### ✅ Backend
+### Backend
 - Node.js
 - Express.js
+- Multer (File Upload Handling)
+- pdf-parse (Resume Text Extraction)
 
-**Why Node.js?**
+### Authentication
+- Firebase Authentication
+- Google Sign-In
 
-✔ Fast & non-blocking execution model  
-✔ Ideal for API-driven applications  
-✔ Same language across stack (JavaScript)
+### Deployment
+- Netlify (Frontend)
+- Render (Backend)
 
-**Why Express.js?**
-
-✔ Lightweight & flexible  
-✔ Clean REST API design  
-✔ Industry-standard backend framework
-
----
-
-### ✅ Deployment
-- Netlify
-
-**Why Netlify?**
-
-✔ Optimized for React / Vite apps  
-✔ Automatic CI/CD from GitHub  
-✔ Global CDN & fast performance  
-✔ Simple deployment workflow  
-
----
-
-### ✅ Version Control
+### Version Control
+- Git
 - GitHub
-
-✔ Code management & history tracking  
-✔ Professional portfolio visibility  
-✔ Industry-standard collaboration platform  
 
 ---
 
 ## 🌐 Live Application
 
-👉 https://careerlens-ai.netlify.app/
+- https://careerlens-app.netlify.app/
+
+---
+
+## 🌐 Backend API
+
+- https://careerlens-nelo.onrender.com/health
 
 ---
 
@@ -142,15 +134,48 @@ This enables users to improve resumes using **objective feedback instead of gues
 
 ## 🚀 Run Locally
 
-### Frontend (Vite)
+### Frontend
 
 ```bash
 cd CareerLens
 npm install
 npm run dev
-
 ```
+
+### Backend
+
+```bash
+cd careerlens-backend
+npm install
+node server.js
+```
+
+---
+
+## 📊 Example ATS Skill Detection
+
+CareerLens checks resumes for common full-stack skills such as:
+
+- HTML
+- CSS
+- JavaScript
+- React
+- Node.js
+- Express
+- MongoDB
+- SQL
+- Git
+- GitHub
+- REST API
+- Docker
+- AWS
+
+The ATS score is calculated based on how many required skills appear in the resume.
+
+---
 
 ## 👨‍💻 Author
 
-Swagath Thanabuddi
+- Swagath Thanabuddi
+- Computer Science Engineering Student
+- GitHub: https://github.com/swagath09
