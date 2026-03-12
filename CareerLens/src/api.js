@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000";
+const API_BASE = "https://careerlens-nelo.onrender.com";
 
 export const analyzeResume = async (file) => {
   const formData = new FormData();
