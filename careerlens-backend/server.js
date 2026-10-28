@@ -106,14 +106,20 @@ app.post("/analyze", upload.single("resume"), async (req, res) => {
     }
 
     const analysis = await analyzeWithAI(req.file.path);
-
-    fs.unlinkSync(req.file.path);
-
-    res.json(analysis);
+    return res.json(analysis);
 
   } catch (err) {
     console.error("SERVER ERROR:", err);
-    res.status(500).json({ error: "Analysis failed" });
+    return res.status(500).json({ error: "Analysis failed" });
+  } finally {
+    // Always attempt to remove temporary uploads, including invalid PDFs.
+    if (req.file?.path) {
+      fs.unlink(req.file.path, (unlinkErr) => {
+        if (unlinkErr && unlinkErr.code !== "ENOENT") {
+          console.error("Failed to remove uploaded file:", unlinkErr);
+        }
+      });
+    }
   }
 });
 
