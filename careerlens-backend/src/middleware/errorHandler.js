@@ -13,9 +13,13 @@ const errorHandler = (err, req, res, next) => {
     return res.status(400).json({ success: false, error: err.message });
   }
 
-  res.status(err.status || 500).json({
+  const status = err.statusCode || err.status || 500;
+  const isServerError = status >= 500;
+
+  res.status(status).json({
     success: false,
-    error: err.message || 'Internal Server Error',
+    // Avoid exposing internal exception details to API clients.
+    error: isServerError ? 'Internal Server Error' : (err.message || 'Request failed'),
   });
 };
 
